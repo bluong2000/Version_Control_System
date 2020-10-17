@@ -1,0 +1,223 @@
+﻿First run “make” in the Asst3 directory to compile the source code and create the executables
+
+
+To set up the server go into the Asst3/server directory on the terminal and run the command:
+
+
+./WTFserver 9075
+
+
+This creates the server at port 9075. The server is only ever terminated by the user exiting it using ctrl + c.
+
+
+Then connect to the server from another terminal in the “Asst3/client” directory and run the command:
+
+
+./WTF configure frost.cs.rutgers.edu 9075
+
+
+This creates a .configure file with the host name and the port number.
+stdout: successfully created configure file
+
+
+If you include a port number that is outside of the range from 5000-65000 a fatal error will be displayed as our professor told us to create the server to a socket from 5000-65000 in lecture.
+
+
+Create tests
+./WTF create <project name>
+If you create a project that does not exist in the server then a project is created in both the server repo and the client directory with the project name. A manifest with a 0 representing the project version is inside the project folder. 
+
+
+stdout:
+Successfully created project
+
+
+If the project already exists on the server than the project folder is not built on the client or server side
+
+
+stdout:
+Error: project already exists in server's repository
+
+
+Destroy tests
+./WTF destroy <project name>
+
+
+If the project exists on  the server then that project is removed from the server along with all backups of it.
+
+
+stdout:
+Successfully deleted project
+
+
+If the project does not exist on the server:
+Error: project does not exist in server repository
+
+
+
+
+
+
+Add tests
+./WTF add <project name> <filename>
+When trying to add a file that doesn’t exist locally 
+
+
+stdout: 
+Fatal Error: file "test/file1.txt" does not exist in project directory
+
+
+When the manifest already has an entry for the file:
+
+
+stdout:
+Error: file already exists in project manifest
+
+
+
+
+
+
+When adding a file that exists an entry with the flag of A is added to the manifest along with the file’s file path and corresponding version number and hash
+stdout:
+Successfully added file to project manifest
+
+
+Remove tests
+./WTF remove <project name> <filename>
+
+
+When removing a file that does not have a manifest entry or already has an ‘R’ flag in manifest:
+stdout:
+Error: file already removed or was never added in manifest
+
+
+When removing a file that does have a manifest entry then change the entry flag to R for remove unless the previous flag was an A then change the entry flag to I for ignore:
+stdout:
+Successfully removed file from manifest
+
+
+Note: all commands beyond this point interact with the client and will stdout: “Error: project does not exist in server repository” if the project does not exist. Along with other generic Errors statements for if the client can not connect or communicate with the server. Also the stdout messages are examples of what you would receive upon meeting the specific input criteria with dummy names for the files. The project being edited is called “test” in the cases below.
+
+
+
+
+Commit tests
+./WTF commit <project name>
+If the server’s .Manifest file can not be updated, the client has a .Update file that is not empty, or the client has a .Conflict file then the command will fail and our program will print out an error corresponding to each case.
+ 
+On a successful commit the program will create a commit file with the changes and print out the edits with the:
+stdout:
+A test/file1.txt
+
+
+A test/file2.txt
+Successfully committed
+
+
+
+
+Push tests
+./WTF push <project name>
+
+
+Push will fail if there is no .Commit file and an error will be printed
+
+
+If push is successful it will push the changes to the existing current version, increment the project version number, and increment the file version number if the file has been changed. The changes will be added to the .History file corresponding to the project in the backups folder of the repository. The project being replaced will then be compressed and stored in the backup folder. The client’s manifest will then be matched with the new manifest created for the server’s project so that both the client and server’s manifest reflects the change.
+stdout:
+Successful push
+
+
+Currentversion tests
+./WTF currentversion <project name>
+
+
+On success Current version will stdout the proj name version and its corresponding files and their versions
+stdout:
+test        1
+test/file1.txt        0
+test/file2.txt        0
+
+
+
+
+Checkout tests
+./WTF checkout <project name>
+
+
+Checkout fails and outputs an error if the project already exists client side
+stdout:
+Error: client already has project file
+
+
+If Checkout is successful it will clone the project into the client’s directory
+std:
+Successfully downloaded project file
+
+
+
+
+Update tests
+./WTF update <project name>
+
+
+If a conflict occurs update prints out all the update changes and conflicts, but deletes the .Update file. A .Conflict file is created with the live hash of the conflict file and an entry with a flag of ‘C’
+stdout:
+C file1.txt
+Conflicts found: Must resolve conflicts before project can be updated
+Update completed
+
+
+If files have been edited, added or removed on the server side then a .Update with these changes will be created and the changes will be printed.
+stdout:
+A test/file2.txt
+Update completed
+
+
+If the manifests match up then an empty .Upgrade file is created:
+stdout:
+Up To Date
+Update completed
+
+
+
+
+Upgrade tests
+./WTF upgrade <project name>
+
+
+Upgrade will fail and output an error if a .Conflict file exists or there is no .Update file.
+
+
+Upon success, upgrade will apply the .Update file to edit the client’s project directory to match the corresponding files with that of the server’s project. The client’s manifest will be replaced by the server’s.
+stdout:
+Successful upgrade
+
+
+History tests
+./WTF history <project name>
+Upon success history will create a .History file with all the previous operations upon successful pushes on the project since its creation. It will also print the contents of the .History file out
+stdout:
+0
+test/file1.txt        A        0        d3ae564035be9619ad00
+test/file2.txt        A        0        d3ae564035be9619ad00
+
+
+1
+test/file1.txt        M        0        24a26350314325bea591
+
+
+Successfully transferred history file to client
+
+
+Rollback tests
+./WTF rollback <project name> <version>
+Rollback will fail if the version number does not exist on the server and an error will be printed
+stdout:
+Error: project version is invalid
+
+
+Upon success roll back will get the desired compressed projection version from the backups folder, delete the current version project, delete any compressed backup projects with version numbers higher than the desired version, and replace the current version with the desired older version. The .History file will be updated to mark the rollback.
+stdout:
+Successfully rolledback to desired version number

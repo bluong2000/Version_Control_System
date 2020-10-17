@@ -1,0 +1,172 @@
+﻿You can run the test cases one after the other with the command “make test”. Be sure to “make clean” before you run the make test. 
+
+
+Note: The default port we use in these test cases is port 9075. If for some reason you see that the client can not connect this means that something is wrong with the port. You can go into WTFtest.c and change every instance of 9075 (using ctrl + f to search) to another port such as 9076 and the code should run. The server will keep running until you end it with ctrl + c. If you want to remove the test files along with the executables then you can use “make cleantest”. Remember to use “make” again after cleaning to recreate the necessary executables
+
+
+
+
+Below are instructions on how to run through the test cases manually, so you can check the outputs after each step. If you want to run them all consecutively then use “make test” while in the Asst3 directory.
+
+
+Call make while in the Asst3 directory
+
+
+Set up two terminals one for the client side and one for the server side. 
+
+
+On one terminal cd into the server folder and create the server using:
+cd server
+./WTFserver 9075
+
+
+Then on the other terminal cd into the client directory and set up the configure file (I am not sure of the host you are running the server on so fill that into the IP/Host section) using:
+cd client
+./WTF configure <IP/Host> 9075
+
+
+We first test create:
+  ./WTF create test
+
+
+This leads to the creation of the project test on both the client and the server
+
+
+We test destroy:
+ ./WTF destroy test
+
+
+This destroys the project test in the server repository
+
+
+ We recreate test so we can perform other operations on it
+  ./WTF create test 
+
+
+We then populate test with subdirectories and files
+mkdir test/sub1
+mkdir test/sub2
+mkdir test/sub1/sub3
+
+
+
+
+
+
+We then edit the files’ contents
+ echo \"hello\" >> test/file1.txt
+ echo \"hello\" >> test/sub1/file2.txt
+ echo \"\" >> test/sub1/file3.txt 
+ echo \"This proj was v hard\" >> test/sub2/file4.txt
+echo \"This is file 5\" >> test/sub1/sub3/file5.txt
+
+
+We then test the add command:
+  ./WTF add test sub1/sub3/file5.txt"
+ ./WTF add test sub2/file4.txt 
+./WTF add test sub1/file3.txt
+ ./WTF add test sub1/file2.txt
+./WTF add test file1.txt 
+
+
+This adds the files to the manifest as entries
+
+
+We test remove:
+ ./WTF remove test file1.txt ";
+
+
+This removes the entry from the manifest
+
+
+Next we test commit:
+ ./WTF commit test
+
+
+This creates a commit of the changes, in this case the added files and also prints the added file change in stdout
+
+
+ We test push:
+./WTF push test  
+
+
+This pushes the changes to the server’s project and creates the added files the old current version is compressed and stored in the backups folder of the repo. The .History in the backups folder is updated with the changes.  Push matches the clients manifest with the server’s newly created one.
+
+
+We test commit and push again with edited files on the client side
+  \"This file was edited\" >> client/test/sub1/sub3/file5.txt
+
+
+ ./WTF commit test  
+
+
+The commit prints the modified file change and creates a commit with the entry
+
+
+./WTF push test
+
+
+This pushes the changes in commit and modifies the corresponding file. Then compresses the old current version and store it in the backups folder. The .History in the  backups folder relating to this project is updated with the changes. Push matches the clients manifest with the server’s newly created one.
+
+
+We test current version
+./WTF currentversion test
+
+
+This outputs the test followed by its current version, along with all the files contained in the current version of test and their corresponding file versions
+
+
+
+
+We test update :
+./WTF update test 
+
+
+update prints out “Up To Date” as the client and server’s manifest are the same. An empty .Update file is created
+
+
+
+
+We test rollback by rolling back to proj version 1 (we are currently at version 2)
+  ./WTF rollback test 1
+
+
+Rollback occurs as the current version project is deleted and the test1.tar.gz is decompressed from the backup folder into where the current version used to be. The history file is updated to signify the rollback to version 1.
+
+
+
+
+We test upgrade again now that the server r project has changed
+  ./WTF update test
+
+
+We see that a sub3/file5.txt has been modified. The change is outputted and a .Update file with an entry of the change is created.
+
+
+We then test upgrade and download the changes made in the .Update file.
+ ./WTF upgrade test
+
+
+The file changes are made and now the client’s project files match the one of that on the server side.
+
+
+Then we test checkout:
+  rm -r test 
+
+
+We remove the project on the client side so we can clone it with checkout
+
+
+
+
+./WTF checkout test 
+
+
+This compresses the current version of the project on the server side and sends it over to be decompressed in the client’s directory. This creates a clone of the project on the server side.
+
+
+Then we test history
+./WTF history test
+
+
+This creates a .History file in the client directory and prints out the contents of that .History file, which are all the changes that have been successfully pushed to the project “test” along with its corresponding project version number.
